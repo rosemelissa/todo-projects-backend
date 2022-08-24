@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-//import { Client } from "pg";
+import { Client } from "pg";
 
 const app = express();
 
@@ -16,21 +16,25 @@ dotenv.config();
 // use the environment variable PORT, or 4000 as a fallback
 const PORT_NUMBER = process.env.PORT ?? 4000;
 
+if (!process.env.DATABASE_URL) {
+  throw "No DATABASE_URL env var!  Have you made a .env file?  And set up dotenv?";
+}
+
 app.get("/projects", async (req, res) => {
-  res.sendFile(
-    "/home/2206-005-mr/Developer/academy/training/side-projects/todo-projects-backend/public/index.html"
-  );
-  /*
   try {
     const client = new Client({
-      database: "todo-projects"
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
     });
-    await client.connect();  
-    const projects = await client.query('SELECT * FROM projects');
+    await client.connect();
+    const projects = await client.query("SELECT * FROM projects");
+    res.json(projects.rows);
+    client.end();
   } catch (error) {
-    
+    console.error(error);
   }
-  */
 });
 
 /*
