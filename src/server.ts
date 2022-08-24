@@ -1,19 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import {
-  addDummyDbItems,
-  addDbItem,
-  getAllDbItems,
-  getDbItemById,
-  DbItem,
-  updateDbItemById,
-} from "./db";
-import filePath from "./filePath";
-
-// loading in some dummy items into the database
-// (comment out if desired, or change the number)
-addDummyDbItems(20);
+//import { Client } from "pg";
 
 const app = express();
 
@@ -28,6 +16,24 @@ dotenv.config();
 // use the environment variable PORT, or 4000 as a fallback
 const PORT_NUMBER = process.env.PORT ?? 4000;
 
+app.get("/projects", async (req, res) => {
+  res.sendFile(
+    "/home/2206-005-mr/Developer/academy/training/side-projects/todo-projects-backend/public/index.html"
+  );
+  /*
+  try {
+    const client = new Client({
+      database: "todo-projects"
+    });
+    await client.connect();  
+    const projects = await client.query('SELECT * FROM projects');
+  } catch (error) {
+    
+  }
+  */
+});
+
+/*
 // API info page
 app.get("/", (req, res) => {
   const pathToFile = filePath("../public/index.html");
@@ -78,6 +84,8 @@ app.patch<{ id: string }, {}, Partial<DbItem>>("/items/:id", (req, res) => {
     res.status(200).json(matchingSignature);
   }
 });
+
+*/
 
 app.listen(PORT_NUMBER, () => {
   console.log(`Server is listening on port ${PORT_NUMBER}!`);
