@@ -30,12 +30,47 @@ app.get("/projects", async (req, res) => {
     });
     await client.connect();
     const projects = await client.query("SELECT * FROM projects");
-    res.json(projects.rows);
+    res.status(200).json(projects.rows);
     client.end();
   } catch (error) {
     console.error(error);
   }
 });
+
+app.get("/project/:id/todos", async (req, res) => {
+  try {
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    });
+    await client.connect();
+    const projectId = parseInt(req.params.id);
+    const todos = await client.query("SELECT * FROM todos WHERE projectid=$1", [projectId]);
+    res.status(200).json(todos.rows);
+    client.end();
+  } catch (error) {
+    console.error(error);
+  }
+})
+
+app.post("/project", async (req, res) => {
+  try {
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    })
+    await client.connect();
+    const projectName = req.body;
+    await client.query("INSERT INTO projects(name) VALUES($1)", [projectName.name]);
+    res.status(201).json(projectName)
+    client.end();
+  } catch (error) {
+  }
+})
 
 /*
 // API info page
