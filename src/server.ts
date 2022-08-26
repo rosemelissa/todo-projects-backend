@@ -51,7 +51,7 @@ app.get("/project/:id/todos", async (req, res) => {
     res.status(200).json(todos.rows);
     client.end();
   } catch (error) {
-    console.error(error);
+      console.error(error);
   }
 })
 
@@ -90,6 +90,53 @@ app.delete("/project/:id", async (req, res) => {
     } else {
       res.status(404).json({"message": "Not found"});
     }
+    client.end();
+  } catch (error) {
+    console.error(error);
+  }
+})
+
+app.patch("/project/:id", async (req, res) => {
+  try {
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    })
+    await client.connect();
+    const projectId = req.params.id;
+    const updatedProjectName = req.body.name;
+    const exists = await client.query("SELECT * FROM projects WHERE id=$1", [projectId]);
+    if (exists.rowCount === 1) {
+      await client.query("UPDATE projects SET name=$1 WHERE id=$2", [updatedProjectName, projectId]);
+      res.status(200).json({id: projectId, name: updatedProjectName})
+    } else {
+      res.status(404).json({"message": "Not found"});
+    }
+    client.end();
+  } catch (error) {
+    console.error(error);
+  }
+})
+
+app.post("/project/:id/todos", async (req, res) => {
+  try {
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    })
+    await client.connect();
+    const projectId = req.params.id;
+    const title = req.body.title;
+    const description = req.body.description;
+    const createdDate = new Date().toISOString();
+    const updatedDate = new Date().toISOString();
+    const dueDate = req.body.dueDate;
+    await client.query("INSERT INTO todos(projectId, title, description, createdDate, updatedDate, dueDate) VALUES ($1, $2, $3, $4, $5, $6)", [projectId, title, description, createdDate, updatedDate, dueDate]);
+    res.status(201).json(req.body);
     client.end();
   } catch (error) {
     console.error(error);
