@@ -72,6 +72,30 @@ app.post("/project", async (req, res) => {
   }
 })
 
+app.delete("/project/:id", async (req, res) => {
+  try {
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    });
+    await client.connect();
+    const projectId = parseInt(req.params.id);
+    const exists = await client.query("SELECT * FROM projects WHERE id=$1", [projectId]);
+    if (exists.rowCount === 1) {
+      await client.query("DELETE FROM todos WHERE projectId=$1", [projectId]);
+      await client.query("DELETE from projects WHERE id=$1", [projectId]);
+      res.status(200).json(projectId);
+    } else {
+      res.status(404).json({"message": "Not found"});
+    }
+    client.end();
+  } catch (error) {
+    console.error(error);
+  }
+})
+
 /*
 // API info page
 app.get("/", (req, res) => {
