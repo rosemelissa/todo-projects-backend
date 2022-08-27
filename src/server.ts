@@ -143,6 +143,30 @@ app.post("/project/:id/todos", async (req, res) => {
   }
 })
 
+app.delete("/project/:projectId/todo/:todoId", async (req, res) => {
+  try {
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    });
+    await client.connect();
+    const projectId = parseInt(req.params.projectId);
+    const todoId = parseInt(req.params.todoId);
+    const exists = await client.query("SELECT * FROM todos WHERE projectId=$1 AND id=$2", [projectId, todoId]);
+    if (exists.rowCount === 1) {
+      await client.query("DELETE FROM todos WHERE projectId=$1 AND id=$2", [projectId, todoId]);
+      res.status(200).json({"message": "Deleted todo"});
+    } else {
+      res.status(404).json({"message": "Not found"});
+    }
+    client.end();
+  } catch (error) {
+      console.error(error);
+  }
+})
+
 /*
 // API info page
 app.get("/", (req, res) => {
