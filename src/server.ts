@@ -216,6 +216,31 @@ app.patch("/project/:projectId/todo/:todoId", async (req, res) => {
   }
 })
 
+app.patch("/project/:projectId/todo/:todoId/completion", async (req, res) => {
+  try {
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    });
+    await client.connect();
+    const projectId = parseInt(req.params.projectId);
+    const todoId = parseInt(req.params.todoId);
+    const complete: boolean = req.body.complete;
+    const exists = await client.query("SELECT * FROM todos WHERE projectId=$1 AND id=$2", [projectId, todoId]);
+    if (exists.rowCount === 1) {
+      await client.query("UPDATE todos SET complete=$1 WHERE projectId=$2 AND id=$3", [complete, projectId, todoId]);
+      res.status(200).json({ message: "Updated todo completion status"});
+    } else {
+      res.status(404).json({ message: "Not found" });
+    }
+    client.end()
+  } catch (error) {
+    console.error(error);
+  }
+})
+
 /*
 // API info page
 app.get("/", (req, res) => {
