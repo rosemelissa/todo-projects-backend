@@ -146,7 +146,7 @@ app.post("/project/:id/todos", async (req, res) => {
     const description = req.body.description;
     const createdDate = new Date().toISOString();
     const updatedDate = new Date().toISOString();
-    const dueDate = req.body.dueDate;
+    const dueDate = req.body.duedate;
     await client.query(
       "INSERT INTO todos(projectId, title, description, createdDate, updatedDate, dueDate) VALUES ($1, $2, $3, $4, $5, $6)",
       [projectId, title, description, createdDate, updatedDate, dueDate]
@@ -187,6 +187,34 @@ app.delete("/project/:projectId/todo/:todoId", async (req, res) => {
     console.error(error);
   }
 });
+
+app.patch("/project/:projectId/todo/:todoId", async (req, res) => {
+  try {
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    });
+    await client.connect();
+    const projectId = parseInt(req.params.projectId);
+    const todoId = parseInt(req.params.todoId);
+    const title: string = req.body.title;
+    const description: string = req.body.description;
+    const dueDate: string = req.body.duedate;
+    const updatedDate = new Date().toISOString();
+    const exists = await client.query("SELECT * FROM todos WHERE projectId=$1 AND id=$2", [projectId, todoId]);
+    if (exists.rowCount === 1) {
+      await client.query("UPDATE todos SET title=$1, description=$2, dueDate=$3, updatedDate=$4 WHERE projectId=$5 AND id=$6", [title, description, dueDate, updatedDate, projectId, todoId]);
+      res.status(200).json({ message: "Updated todo"});
+    } else {
+      res.status(404).json({ message: "Not found" });
+    }
+    client.end()
+  } catch (error) {
+    console.error(error);
+  }
+})
 
 /*
 // API info page
