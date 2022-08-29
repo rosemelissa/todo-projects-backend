@@ -203,18 +203,24 @@ app.patch("/project/:projectId/todo/:todoId", async (req, res) => {
     const description: string = req.body.description;
     const dueDate: string = req.body.duedate;
     const updatedDate = new Date().toISOString();
-    const exists = await client.query("SELECT * FROM todos WHERE projectId=$1 AND id=$2", [projectId, todoId]);
+    const exists = await client.query(
+      "SELECT * FROM todos WHERE projectId=$1 AND id=$2",
+      [projectId, todoId]
+    );
     if (exists.rowCount === 1) {
-      await client.query("UPDATE todos SET title=$1, description=$2, dueDate=$3, updatedDate=$4 WHERE projectId=$5 AND id=$6", [title, description, dueDate, updatedDate, projectId, todoId]);
-      res.status(200).json({ message: "Updated todo"});
+      await client.query(
+        "UPDATE todos SET title=$1, description=$2, dueDate=$3, updatedDate=$4 WHERE projectId=$5 AND id=$6",
+        [title, description, dueDate, updatedDate, projectId, todoId]
+      );
+      res.status(200).json({ message: "Updated todo" });
     } else {
       res.status(404).json({ message: "Not found" });
     }
-    client.end()
+    client.end();
   } catch (error) {
     console.error(error);
   }
-})
+});
 
 app.patch("/project/:projectId/todo/:todoId/completion", async (req, res) => {
   try {
@@ -228,18 +234,24 @@ app.patch("/project/:projectId/todo/:todoId/completion", async (req, res) => {
     const projectId = parseInt(req.params.projectId);
     const todoId = parseInt(req.params.todoId);
     const complete: boolean = req.body.complete;
-    const exists = await client.query("SELECT * FROM todos WHERE projectId=$1 AND id=$2", [projectId, todoId]);
+    const exists = await client.query(
+      "SELECT * FROM todos WHERE projectId=$1 AND id=$2",
+      [projectId, todoId]
+    );
     if (exists.rowCount === 1) {
-      await client.query("UPDATE todos SET complete=$1 WHERE projectId=$2 AND id=$3", [complete, projectId, todoId]);
-      res.status(200).json({ message: "Updated todo completion status"});
+      await client.query(
+        "UPDATE todos SET complete=$1 WHERE projectId=$2 AND id=$3",
+        [complete, projectId, todoId]
+      );
+      res.status(200).json({ message: "Updated todo completion status" });
     } else {
       res.status(404).json({ message: "Not found" });
     }
-    client.end()
+    client.end();
   } catch (error) {
     console.error(error);
   }
-})
+});
 
 /*
 // API info page
