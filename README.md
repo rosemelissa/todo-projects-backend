@@ -3,5 +3,5 @@ A server for a simple todo-list app to manage tasks for different projects. [Vie
 
 ## Running locally
 Clone the repo and run `yarn` to install dependencies.
-Make a `.env` folder with the forat of `.env.example`.
+Make a `.env` folder with the format of `.env.example`.
 Use the command `yarn start` or `yarn start:dev` to run the server.
