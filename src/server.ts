@@ -20,18 +20,19 @@ if (!process.env.DATABASE_URL) {
   throw "No DATABASE_URL env var!  Have you made a .env file?  And set up dotenv?";
 }
 
-app.get("/projects", async (req, res) => {
-  try {
-    const client = new Client({
+const client = new Client({
       connectionString: process.env.DATABASE_URL,
       ssl: {
         rejectUnauthorized: false,
       },
     });
-    await client.connect();
+
+client.connect();
+
+app.get("/projects", async (req, res) => {
+  try {
     const projects = await client.query("SELECT * FROM projects");
     res.status(200).json(projects.rows);
-    client.end();
   } catch (error) {
     console.error(error);
   }
@@ -39,19 +40,11 @@ app.get("/projects", async (req, res) => {
 
 app.get("/project/:id/todos", async (req, res) => {
   try {
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    });
-    await client.connect();
     const projectId = parseInt(req.params.id);
     const todos = await client.query("SELECT * FROM todos WHERE projectid=$1", [
       projectId,
     ]);
     res.status(200).json(todos.rows);
-    client.end();
   } catch (error) {
     console.error(error);
   }
@@ -59,19 +52,11 @@ app.get("/project/:id/todos", async (req, res) => {
 
 app.post("/project", async (req, res) => {
   try {
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    });
-    await client.connect();
     const projectName = req.body;
     await client.query("INSERT INTO projects(name) VALUES($1)", [
       projectName.name,
     ]);
     res.status(201).json(projectName);
-    client.end();
   } catch (error) {
     console.error(error);
   }
@@ -79,13 +64,6 @@ app.post("/project", async (req, res) => {
 
 app.delete("/project/:id", async (req, res) => {
   try {
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    });
-    await client.connect();
     const projectId = parseInt(req.params.id);
     const exists = await client.query("SELECT * FROM projects WHERE id=$1", [
       projectId,
@@ -97,7 +75,6 @@ app.delete("/project/:id", async (req, res) => {
     } else {
       res.status(404).json({ message: "Not found" });
     }
-    client.end();
   } catch (error) {
     console.error(error);
   }
@@ -105,13 +82,6 @@ app.delete("/project/:id", async (req, res) => {
 
 app.patch("/project/:id", async (req, res) => {
   try {
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    });
-    await client.connect();
     const projectId = req.params.id;
     const updatedProjectName = req.body.name;
     const exists = await client.query("SELECT * FROM projects WHERE id=$1", [
@@ -126,7 +96,6 @@ app.patch("/project/:id", async (req, res) => {
     } else {
       res.status(404).json({ message: "Not found" });
     }
-    client.end();
   } catch (error) {
     console.error(error);
   }
@@ -134,13 +103,6 @@ app.patch("/project/:id", async (req, res) => {
 
 app.post("/project/:id/todos", async (req, res) => {
   try {
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    });
-    await client.connect();
     const projectId = req.params.id;
     const title = req.body.title;
     const description = req.body.description;
@@ -152,7 +114,6 @@ app.post("/project/:id/todos", async (req, res) => {
       [projectId, title, description, createdDate, updatedDate, dueDate]
     );
     res.status(201).json(req.body);
-    client.end();
   } catch (error) {
     console.error(error);
   }
@@ -160,13 +121,6 @@ app.post("/project/:id/todos", async (req, res) => {
 
 app.delete("/project/:projectId/todo/:todoId", async (req, res) => {
   try {
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    });
-    await client.connect();
     const projectId = parseInt(req.params.projectId);
     const todoId = parseInt(req.params.todoId);
     const exists = await client.query(
@@ -182,7 +136,6 @@ app.delete("/project/:projectId/todo/:todoId", async (req, res) => {
     } else {
       res.status(404).json({ message: "Not found" });
     }
-    client.end();
   } catch (error) {
     console.error(error);
   }
@@ -190,13 +143,6 @@ app.delete("/project/:projectId/todo/:todoId", async (req, res) => {
 
 app.patch("/project/:projectId/todo/:todoId", async (req, res) => {
   try {
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    });
-    await client.connect();
     const projectId = parseInt(req.params.projectId);
     const todoId = parseInt(req.params.todoId);
     const title: string = req.body.title;
@@ -216,7 +162,6 @@ app.patch("/project/:projectId/todo/:todoId", async (req, res) => {
     } else {
       res.status(404).json({ message: "Not found" });
     }
-    client.end();
   } catch (error) {
     console.error(error);
   }
@@ -224,13 +169,6 @@ app.patch("/project/:projectId/todo/:todoId", async (req, res) => {
 
 app.patch("/project/:projectId/todo/:todoId/completion", async (req, res) => {
   try {
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    });
-    await client.connect();
     const projectId = parseInt(req.params.projectId);
     const todoId = parseInt(req.params.todoId);
     const complete: boolean = req.body.complete;
@@ -247,7 +185,6 @@ app.patch("/project/:projectId/todo/:todoId/completion", async (req, res) => {
     } else {
       res.status(404).json({ message: "Not found" });
     }
-    client.end();
   } catch (error) {
     console.error(error);
   }
